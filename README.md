@@ -1,12 +1,14 @@
 # ModuleProfiler
 
+![https://ci.appveyor.com/project/soenneker/moduleprofiler](https://ci.appveyor.com/api/projects/status/github/soenneker/moduleprofiler?svg=true)
+
 A rudimentary .NET profiler that measures performance of requests.
 
 It consists of three projects: the module, a sample web app, and some basic tests. The module injects a small amount of HTML into the end of the page which outputs analysis of the request.
 
 ## Getting Started
 
-A demo can be found [here]().
+A demo can be found [here](https://moduleprofiler.azurewebsites.net).
 
 Once the module has been built, a PowerShell script (`InstallScript.ps1`, run as admin) has been included in the solution that adds the module to all IIS sites.
 
