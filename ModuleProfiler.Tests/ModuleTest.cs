@@ -45,10 +45,10 @@ namespace ModuleProfiler.Tests
 
             module.EndRequest(context.Object);
 
-            Assert.IsNotNull(module.Request);
-            Assert.IsTrue(module.Request.AssemblyCount != 0);
-            Assert.IsTrue(module.Request.MemoryUsage != 0);
-            Assert.IsTrue(module.Request.TotalRequestTime != TimeSpan.Zero);
+            Assert.IsNotNull(module.RequestAnalysis);
+            Assert.IsTrue(module.RequestAnalysis.AssemblyCount != 0);
+            Assert.IsTrue(module.RequestAnalysis.MemoryUsage != 0);
+            Assert.IsTrue(module.RequestAnalysis.TotalRequestTime != TimeSpan.Zero);
         }
     }
 }
