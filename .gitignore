@@ -7,3 +7,5 @@
 /.vs
 /ModuleProfiler.Module/bin
 /ModuleProfiler.Module/obj
+/TestResults
+/Logs
