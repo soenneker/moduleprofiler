@@ -49,10 +49,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\RequestAnalysis.cs" />
+    <Compile Include="Utils\RequestAnalysisUtils.cs" />
     <Compile Include="RequestCaptureModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamCapture.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="Utils\SharedUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="NLog.config">

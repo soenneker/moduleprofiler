@@ -4,6 +4,9 @@ using System.Text;
 
 namespace ModuleProfiler.Module
 {
+    /// <summary>
+    /// Allows for hooking into the request's stream via a filter to analyze and modify it.
+    /// </summary>
     public class StreamCapture : Stream
     {
         private readonly Stream _base;
@@ -37,11 +40,11 @@ namespace ModuleProfiler.Module
             _base.Flush();
         }
 
-        public override bool CanRead => throw new NotImplementedException();
+        public override bool CanRead => true;
 
-        public override bool CanSeek => throw new NotImplementedException();
+        public override bool CanSeek => false;
 
-        public override bool CanWrite => throw new NotImplementedException();
+        public override bool CanWrite => true;
 
         public override long Seek(long offset, SeekOrigin origin)
         {

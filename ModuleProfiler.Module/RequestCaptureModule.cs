@@ -1,17 +1,23 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Web;
 using ModuleProfiler.Module.Models;
 using NLog;
+using ModuleProfiler.Module.Utils;
 
 namespace ModuleProfiler.Module
 {
+    /// <summary>
+    /// Subscribes to the beginning and end of the requests to the host web application.
+    /// </summary>
     public class RequestCaptureModule : IHttpModule
     {
         public RequestAnalysis RequestAnalysis { get; private set; }
 
-        private Stopwatch _moduleSW;
-        private Stopwatch _requestSW;
+        private Stopwatch _moduleStopwatch;
+        private Stopwatch _totalStopwatch;
 
         private StreamCapture _capture;
 
@@ -27,20 +33,18 @@ namespace ModuleProfiler.Module
         private long _totalSize;
         private long _numRequests;
 
-        private static Logger _logger;
-
-        public RequestCaptureModule() { }
-
-        public string ModuleName => "RequestCaptureModule";
+        private Logger _logger;
+        private Logger _requestsLogger;
 
         public void Init(HttpApplication application)
         {
             LogManager.ThrowExceptions = true;
 
             _logger = LogManager.GetLogger("module");
+            _requestsLogger = LogManager.GetLogger("requests");
 
-            _moduleSW = new Stopwatch();
-            _requestSW = new Stopwatch();
+            _totalStopwatch = new Stopwatch();
+            _moduleStopwatch = new Stopwatch();
 
             _minimumSize = 0;
             _averageSize = 0;
@@ -58,10 +62,13 @@ namespace ModuleProfiler.Module
 
         public void BeginRequest(HttpResponseBase httpResponseBase)
         {
-            _requestSW.Restart();
-            _moduleSW.Restart();
+            _totalStopwatch.Restart();
+            _moduleStopwatch.Restart();
 
-            RequestAnalysis = new RequestAnalysis();
+            RequestAnalysis = new RequestAnalysis
+            {
+                RequestId = Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "")
+            };
 
             _numRequests++;
 
@@ -72,14 +79,14 @@ namespace ModuleProfiler.Module
             }
             catch (Exception ex)
             {
-                Utils.Log("RequestId " + RequestAnalysis.RequestId + "Exception " + ex, _logger);
+                SharedUtils.Log("RequestId " + RequestAnalysis.RequestId + "Exception " + ex, _logger);
             }
 
-            _startStrings = Utils.GetStringCount();
+            _startStrings = RequestAnalysisUtils.GetStringCount();
 
             _startMemory = GC.GetTotalMemory(true);
 
-            _moduleSW.Stop();
+            _moduleStopwatch.Stop();
         }
 
         private void Application_EndRequest(object source, EventArgs e)
@@ -90,10 +97,49 @@ namespace ModuleProfiler.Module
 
         public void EndRequest(HttpContextBase contextBase)
         {
-            _moduleSW.Start();
+            _moduleStopwatch.Start();
 
-            long size = _capture.Length;
+            SizeCalculations(_capture.Length);
 
+            try
+            {
+                string response = contextBase.Response.Filter.ToString();
+
+                contextBase.Response.Clear();
+
+                RequestAnalysis.AssemblyCount = AppDomain.CurrentDomain.GetAssemblies().Length;
+
+                _endStrings = RequestAnalysisUtils.GetStringCount();
+                RequestAnalysis.StringsCount = _endStrings - _startStrings;
+
+                _endMemory = GC.GetTotalMemory(true);
+                RequestAnalysis.MemoryUsage = _endMemory - _startMemory;
+
+                _moduleStopwatch.Stop();
+                _totalStopwatch.Stop();
+                
+                RequestAnalysis.TotalRequestTime = _totalStopwatch.Elapsed;
+                RequestAnalysis.ModuleRequestTime = _moduleStopwatch.Elapsed;
+
+                RequestAnalysisUtils.WriteToLog(RequestAnalysis, _requestsLogger);
+
+                NameValueCollection appSettings = SharedUtils.GetConfigSection("appSettings");
+                string featureToggle_Interface = appSettings["FeatureToggle_Interface"];
+                bool.TryParse(featureToggle_Interface, out bool enabled);
+
+                // Building the stats and writing the response will take some time but it can't be displayed to the user
+                response = response.Replace("</body>", RequestAnalysisUtils.BuildStatsOutput(RequestAnalysis, enabled));
+
+                contextBase.Response.Write(response);
+            }
+            catch (Exception ex)
+            {
+                SharedUtils.Log("RequestId " + RequestAnalysis.RequestId + "Exception " + ex, _logger);
+            }
+        }
+
+        private void SizeCalculations(long size)
+        {
             _totalSize += size;
 
             if (size < _minimumSize || _minimumSize == 0)
@@ -107,41 +153,7 @@ namespace ModuleProfiler.Module
             RequestAnalysis.MinimumSize = _minimumSize;
             RequestAnalysis.MaximumSize = _maximumSize;
             RequestAnalysis.AverageSize = _averageSize;
-
-            try
-            {
-                string response = contextBase.Response.Filter.ToString();
-
-                contextBase.Response.Clear();
-
-                RequestAnalysis.AssemblyCount = AppDomain.CurrentDomain.GetAssemblies().Length;
-
-                _endStrings = Utils.GetStringCount();
-
-                RequestAnalysis.StringsCount = _endStrings - _startStrings;
-
-                _endMemory = GC.GetTotalMemory(true);
-
-                RequestAnalysis.MemoryUsage = _endMemory - _startMemory;
-                RequestAnalysis.ResponseSize = size;
-
-                _moduleSW.Stop();
-                _requestSW.Stop();
-
-                RequestAnalysis.ModuleRequestTime = _moduleSW.Elapsed;
-                RequestAnalysis.TotalRequestTime = _requestSW.Elapsed;
-
-                RequestAnalysis.WriteToLog();
-
-                // Building the stats and writing the response will take some time but it can't be displayed to the user
-                response = response.Replace("</body>", RequestAnalysis.BuildStatsOutput());
-
-                contextBase.Response.Write(response);
-            }
-            catch (Exception ex)
-            {
-                Utils.Log("RequestId " + RequestAnalysis.RequestId + "Exception " + ex, _logger);
-            }
+            RequestAnalysis.ResponseSize = size;
         }
 
         public void Dispose()

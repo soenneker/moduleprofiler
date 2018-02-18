@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModuleProfiler.Module;
+using ModuleProfiler.Module.Utils;
 using Moq;
 
 namespace ModuleProfiler.Tests
@@ -15,7 +15,7 @@ namespace ModuleProfiler.Tests
         [TestMethod]
         public void ProcessStringCounter()
         {
-            int count = Utils.GetStringCount();
+            int count = RequestAnalysisUtils.GetStringCount();
 
             Assert.IsTrue(count != 0);
         }

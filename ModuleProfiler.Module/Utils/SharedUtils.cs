@@ -1,63 +1,28 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.Diagnostics.Runtime;
 using NLog;
 
-namespace ModuleProfiler.Module
+namespace ModuleProfiler.Module.Utils
 {
-    public static class Utils
+    /// <summary>
+    /// Performs utilities that are not specific to request analysis.
+    /// </summary>
+    public static class SharedUtils
     {
         private static readonly string[] _sizeSuffixes = { "bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-
-        /// <summary>
-        /// Walks the heap and checks all objects for string type.
-        /// </summary>
-        /// <returns>The number of found strings.</returns>
-        public static int GetStringCount()
-        {
-            int numberOfStrings = 0;
-            Process currentProcess = Process.GetCurrentProcess();
-
-            using (DataTarget dataTarget = DataTarget.AttachToProcess(currentProcess.Id, 10000, AttachFlag.Passive))
-            {
-                ClrInfo clrVersion = dataTarget.ClrVersions.First();
-                ClrRuntime runtime = clrVersion.CreateRuntime();
-                ClrHeap heap = runtime.Heap;
-
-                if (!heap.CanWalkHeap)
-                    return 0;
-
-                foreach (ulong ptr in heap.EnumerateObjectAddresses())
-                {
-                    ClrType type = heap.GetObjectType(ptr);
-
-                    if (type == null || type.IsString == false)
-                        continue;
-
-                    numberOfStrings++;
-                }
-            }
-
-            return numberOfStrings;
-        }
 
         /// <summary>
         /// Transforms bytes into a display figure (i.e. 1024 bytes -> 1.0 kb)
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static string SizeToDisplay(this long value)
+        public static string ToBytesDisplay(this long value)
         {
-            int decimalPlaces = 1;
-
-            if (decimalPlaces < 0)
-                throw new ArgumentOutOfRangeException("decimalPlaces");
+            const int decimalPlaces = 1;
 
             if (value < 0)
-                return "-" + SizeToDisplay(-value);
+                return "-" + ToBytesDisplay(-value);
 
             if (value == 0)
                 return string.Format("{0:n" + decimalPlaces + "} bytes", 0);
