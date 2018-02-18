@@ -1,6 +1,6 @@
 # ModuleProfiler
 
-![https://ci.appveyor.com/project/soenneker/moduleprofiler](https://ci.appveyor.com/api/projects/status/github/soenneker/moduleprofiler?svg=true)
+[![build status](https://ci.appveyor.com/api/projects/status/github/soenneker/moduleprofiler?svg=true)](https://ci.appveyor.com/project/soenneker/moduleprofiler)
 
 A rudimentary .NET profiler that measures performance of requests.
 
