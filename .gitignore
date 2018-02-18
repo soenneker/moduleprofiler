@@ -1,0 +1,9 @@
+/ModuleProfiler.Web/bin
+/ModuleProfiler.Web/obj
+/ModuleProfiler.Tests/bin
+/ModuleProfiler.Tests/obj
+/packages
+/ModuleProfiler.Web/*.user
+/.vs
+/ModuleProfiler.Module/bin
+/ModuleProfiler.Module/obj
