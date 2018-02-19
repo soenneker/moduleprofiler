@@ -2,7 +2,7 @@
 
 [![build status](https://ci.appveyor.com/api/projects/status/github/soenneker/moduleprofiler?svg=true)](https://ci.appveyor.com/project/soenneker/moduleprofiler)
 
-A rudimentary .NET profiler that measures performance of requests.
+A rudimentary ASP.NET profiler that measures performance of requests.
 
 It consists of three projects: the module, a sample web app, and some basic tests. The module injects a small amount of HTML into the end of the page which outputs analysis of the request.
 
@@ -49,7 +49,7 @@ A web.config setting (`FeatureToggle_Interface`) can enable/disable the UI overl
 * Check for module existence
 * Find each site, iterate over them
   * Stop site
-  * Copy module (/bin) to installation directory
+  * Copy module (`/bin`) to installation directory
   * Identify and digest web.config
   * Modify web.config
   * Start site

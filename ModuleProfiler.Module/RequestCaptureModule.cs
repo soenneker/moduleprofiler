@@ -38,17 +38,15 @@ namespace ModuleProfiler.Module
 
         public void Init(HttpApplication application)
         {
-            LogManager.ThrowExceptions = true;
-
-            _logger = LogManager.GetLogger("module");
-            _requestsLogger = LogManager.GetLogger("requests");
-
             _totalStopwatch = new Stopwatch();
             _moduleStopwatch = new Stopwatch();
 
             _minimumSize = 0;
             _averageSize = 0;
             _maximumSize = 0;
+
+            _logger = LogManager.GetLogger("module");
+            _requestsLogger = LogManager.GetLogger("requests");
 
             application.BeginRequest += Application_BeginRequest;
             application.EndRequest += Application_EndRequest;

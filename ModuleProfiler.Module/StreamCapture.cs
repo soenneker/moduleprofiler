@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 
 namespace ModuleProfiler.Module
@@ -40,26 +39,26 @@ namespace ModuleProfiler.Module
             _base.Flush();
         }
 
-        public override bool CanRead => true;
+        public override bool CanRead => _base.CanRead;
 
-        public override bool CanSeek => false;
+        public override bool CanSeek => _base.CanSeek;
 
-        public override bool CanWrite => true;
+        public override bool CanWrite => _base.CanWrite;
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            throw new NotImplementedException();
+            return _base.Seek(offset, origin);
         }
 
         public override void SetLength(long value)
         {
-            throw new NotImplementedException();
+            _base.SetLength(value);
         }
 
         public override long Position
         {
-            get => throw new NotImplementedException();
-            set => throw new NotImplementedException();
+            get => _base.Position;
+            set => _base.Position = value;
         }
     }
 }
